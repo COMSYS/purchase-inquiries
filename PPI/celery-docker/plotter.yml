@@ -1,0 +1,16 @@
+version: '3.4'
+services:
+
+  plotter:
+    build: .
+    image: &img worker
+    command: ["python", "plotter.py"]
+
+    restart: 'no'
+    volumes:
+      - ./app:/app
+
+
+
+volumes:
+  minio:

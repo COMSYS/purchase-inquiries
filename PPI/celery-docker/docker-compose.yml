@@ -1,0 +1,152 @@
+version: '3.4'
+services:
+  frontend-seller:
+    build: .
+    image: &img worker
+    command: ["python","Seller/mainseller.py"]
+    environment: &env
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq-seller:5672
+      - CELERY_BROKER_BUYER_URL=amqp://guest:guest@rabbitmq-buyer:5672
+      - THIRDPARTY_FRONTEND_PORT=8080
+      - SELLER_FRONTEND_PORT=9090
+      - BUYER_FRONTEND_PORT=8080
+      - BUYER_ADDRESS=frontend-buyer
+      - THIRDPARTY_ADDRESS=frontend-thirdparty
+      - DEBUG=True
+    depends_on:
+      - rabbitmq-seller
+    restart: 'no'
+    ports:
+      - 800:9090
+    volumes: 
+      - ./app:/app
+
+
+  worker-seller:
+      build: .
+      image: *img
+      command: [celery, worker, --app=backend.app_seller, --pool=prefork, --concurrency=20, --loglevel=INFO, --max-tasks-per-child=1]
+      environment: *env
+
+      depends_on:
+        - rabbitmq-seller
+
+      restart: 'no'
+      volumes:
+        - ./app:/app
+
+  frontend-buyer:
+    build: .
+    image: *img
+    command: ["python", "Buyer/frontend.py"]
+    environment:
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq-buyer:5672
+      - CELERY_BROKER_BUYER_URL=amqp://guest:guest@rabbitmq-buyer:5672
+      - THIRDPARTY_FRONTEND_PORT=8080
+      - SELLER_FRONTEND_PORT=9090
+      - BUYER_FRONTEND_PORT=8080
+      - SELLER_ADDRESS=frontend-seller
+      - THIRDPARTY_ADDRESS=frontend-thirdparty
+      - DEBUG=True
+    ports:
+      - 8080:8080
+    volumes:
+      - ./app:/app
+
+  worker-buyer:
+    build: .
+    image: *img
+    command: [celery, worker, --app=backend.app_buyer, --pool=prefork, --concurrency=20, --loglevel=INFO]
+    environment:
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq-buyer:5672
+      - CELERY_BROKER_BUYER_URL=amqp://guest:guest@rabbitmq-buyer:5672
+      - THIRDPARTY_FRONTEND_PORT=8080
+      - SELLER_FRONTEND_PORT=9090
+      - BUYER_FRONTEND_PORT=8080
+      - SELLER_ADDRESS=frontend-seller
+      - THIRDPARTY_ADDRESS=frontend-thirdparty
+      - DEBUG=True
+    depends_on:
+      - rabbitmq-buyer
+
+    restart: 'no'
+    volumes:
+      - ./app:/app
+
+  frontend-thirdparty:
+    build: .
+    image: *img
+    command: ["python","ThirdParty/frontend.py"]
+    environment:
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq-thirdparty:5672
+      - CELERY_BROKER_BUYER_URL=amqp://guest:guest@rabbitmq-thirdparty:5672
+      - SELLER_FRONTEND_PORT=9090
+      - BUYER_FRONTEND_PORT=8080
+      - BUYER_ADDRESS=frontend-buyer
+      - SELLER_ADDRESS=frontend-seller
+      - DEBUG=True
+      - THIRDPARTY_FRONTEND_PORT=8080
+    depends_on:
+      - rabbitmq-seller
+    restart: 'no'
+    volumes:
+      - ./app:/app
+
+
+  worker-thirdparty:
+    build: .
+    image: *img
+    command: [celery, worker, --app=backend.app_thirdparty, --pool=prefork, --concurrency=20, --loglevel=INFO, --max-tasks-per-child=1]
+    environment:
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq-thirdparty:5672
+      - CELERY_BROKER_BUYER_URL=amqp://guest:guest@rabbitmq-thirdparty:5672
+      - SELLER_FRONTEND_PORT=9090
+      - BUYER_FRONTEND_PORT=8080
+      - BUYER_ADDRESS=frontend-buyer
+      - SELLER_ADDRESS=frontend-seller
+      - DEBUG=True
+      - THIRDPARTY_FRONTEND_PORT=8080
+
+    depends_on:
+      - rabbitmq-seller
+
+    restart: 'no'
+    volumes:
+      - ./app:/app
+
+  rabbitmq-seller:
+    image: rabbitmq:3.7.8
+
+  rabbitmq-buyer:
+    image: rabbitmq:3.7.8
+
+  rabbitmq-thirdparty:
+    image: rabbitmq:3.7.8
+
+  evaluator:
+    build: .
+    image: *img
+    command: ["python","create_values.py"]
+    environment:
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq-thirdparty:5672
+      - THIRDPARTY_FRONTEND_PORT=8080
+      - SELLER_FRONTEND_PORT=9090
+      - BUYER_FRONTEND_PORT=8080
+      - BUYER_FRONTEND_ADDRESS=frontend-buyer
+      - THIRDPARTY_FRONTEND_ADDRESS=frontend-thirdparty
+      - SELLER_FRONTEND_ADDRESS=frontend-seller
+      - DEBUG=True
+    depends_on:
+      - rabbitmq-thirdparty
+      - rabbitmq-seller
+      - rabbitmq-buyer
+      - worker-buyer
+      - worker-seller
+      - worker-thirdparty
+      - frontend-buyer
+    restart: 'no'
+    volumes:
+      - ./app:/app
+
+volumes:
+  minio:

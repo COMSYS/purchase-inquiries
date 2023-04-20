@@ -1,0 +1,45 @@
+version: '3.4'
+services:
+
+  test-seller:
+    build: .
+    image: &img worker
+    command: ["python", "Seller/Tests/test_seller.py"]
+
+    environment:
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq-buyer:5672
+      - CELERY_BROKER_BUYER_URL=amqp://guest:guest@rabbitmq-buyer:5672
+      - SELLER_FRONTEND_PORT=9090
+      - BUYER_FRONTEND_PORT=8080
+      - THIRDPARTY_FRONTEND_PORT=8080
+      - THIRDPARTY_ADDRESS=frontend-thirdparty
+      - SELLER_ADDRESS=frontend-seller
+      - BUYER_ADDRESS=frontend-buyer
+      - DEBUG=True
+    restart: 'no'
+    volumes:
+      - ./app:/app
+
+  test-buyer:
+    build: .
+    image: *img
+    command: ["python", "Buyer/Tests/test_buyer.py"]
+
+    environment:
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq-buyer:5672
+      - CELERY_BROKER_BUYER_URL=amqp://guest:guest@rabbitmq-buyer:5672
+      - SELLER_FRONTEND_PORT=9090
+      - BUYER_FRONTEND_PORT=8080
+      - THIRDPARTY_FRONTEND_PORT=8080
+      - THIRDPARTY_ADDRESS=frontend-thirdparty
+      - SELLER_ADDRESS=frontend-seller
+      - BUYER_ADDRESS=frontend-buyer
+      - DEBUG=True
+    restart: 'no'
+    volumes:
+      - ./app:/app
+
+
+
+volumes:
+  minio:
