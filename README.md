@@ -7,7 +7,7 @@ This repository contains our prototypes for protocols (PPI, HPI, and cHPI) to of
 
 ## Publication
 
-- Jan Pennekamp, Markus Dahlmanns, Frederik Fuhrmann, Timo Heutmann, Alexander Kreppein, Dennis Grunert, Christoph Lange, Robert H. Schmitt, and Klaus Wehrle: *Offering Two-Way Privacy for Evolved Purchase Inquiries*. ACM Transactions on Internet Technology, ACM, 2023.
+- Jan Pennekamp, Markus Dahlmanns, Frederik Fuhrmann, Timo Heutmann, Alexander Kreppein, Dennis Grunert, Christoph Lange, Robert H. Schmitt, and Klaus Wehrle: *Offering Two-Way Privacy for Evolved Purchase Inquiries*. ACM Transactions on Internet Technology, 23(4), ACM, 2023.
 
 If you use any portion of our work, please cite our publication.
 
@@ -17,7 +17,12 @@ If you use any portion of our work, please cite our publication.
     title = {{Offering Two-Way Privacy for Evolved Purchase Inquiries}},
     journal = {ACM Transactions on Internet Technology},
     year = {2023},
-    publisher = {ACM}
+    volume = {23},
+    number = {4},
+    publisher = {ACM},
+    month = {11},
+    doi = {10.1145/3599968},
+    issn = {1533-5399},
 }
 ```
 
@@ -29,7 +34,7 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 
 You should have received a copy of the GNU General Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-If you are planning to integrate parts of our work into a commercial product and do not want to disclose your source code, please contact us for other licensing options via email at REDACTED.
+If you are planning to integrate parts of our work into a commercial product and do not want to disclose your source code, please contact us for other licensing options via email at pennekamp (at) comsys (dot) rwth-aachen (dot) de
 
 ---
 
